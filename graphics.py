@@ -54,12 +54,14 @@ class GFX:
         """ Initialize the game window and objects
         There is a ball and a player."""
         self.win = tk.Tk()
+        self.win.protocol("WM_DELETE_WINDOW", self.close)
         self.win.title = "Pong"
         self.win.resizable(0,0)
         self.win.wm_attributes("-topmost", 1)
         
         self.canvas = tk.Canvas(self.win, width=400, height=400, bd=0, highlightthickness=0)
         self.canvas.pack()
+        self._open=True     # variable to keep track of open window (DO NOT CHANGE)
     
         self.ball = Ball(self.canvas, "red")
         self.ball.width = 10
@@ -90,4 +92,8 @@ class GFX:
             self.thread.done = False
             self.thread.run()
         
+    def close(self):
+        # close the window
+        self.win.destroy()
+        self._open = False
         

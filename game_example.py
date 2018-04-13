@@ -9,6 +9,8 @@ if __name__ == '__main__':
     
     while 1:
         # main loop
+        if (window._open == False):
+            break
         window.update() # this happens on a different thread
         
         print("We can do stuff without interfering with the gfx display rate", time.time())
@@ -26,7 +28,7 @@ if __name__ == '__main__':
         
         
 
-
+    print("Game ended.")
 
     
     
