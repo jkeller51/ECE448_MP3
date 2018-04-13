@@ -12,6 +12,9 @@ class PongModel:
         self.ball_velocity_y = bvelocityY
         self.paddle_x = 1.0 #this is a constant
         self.paddle_y = paddleY
+        self.paddle_height = 0.2
+        self.rewards = 0
+        
 
 
     def can_move(self, proposed_move):
@@ -42,8 +45,20 @@ class PongModel:
             else:
                 #trying to move down.
                 self.paddle_y = 1
-                
-            
+
+    def game_terminated():
+        """
+           Returns(bool): True if ball's x coordinate is greater than x coordinate of  paddle (i.e. ball has passed paddle). False otherwise
+        """
+        if self.ball_x > self.paddle_x:
+            return True
+        else:
+            return False
+
+    def simulate_env():
+        """Update environment at each timestep"""
+        pass
+        
     
 
 
