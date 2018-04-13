@@ -7,6 +7,18 @@ Created on Fri Apr 13 15:39:40 2018
 
 import tkinter as tk
 import time
+import threading
+
+class DrawThread(threading.Thread):
+    
+    def __init__(self, gfxobj):
+        self.done = True
+        self.gfx = gfxobj
+        
+    def run(self):
+        self.gfx._update()
+        time.sleep(0.033)
+        self.done = True
 
 class Ball:
     def __init__(self, canvas, color):
@@ -30,7 +42,7 @@ class Player:
         self.x = 0
         self.y = 0
         self.width=10
-        self.height=50
+        self.height=80
         
     def draw(self):
         self.canvas.delete(self.id)
@@ -39,31 +51,49 @@ class Player:
 
 class GFX:
     def __init__(self):
+        """ Initialize the game window and objects
+        There is a ball and a player."""
         self.win = tk.Tk()
+        self.win.protocol("WM_DELETE_WINDOW", self.close)
         self.win.title = "Pong"
         self.win.resizable(0,0)
         self.win.wm_attributes("-topmost", 1)
         
-        self.canvas = tk.Canvas(self.win, width=500, height=400, bd=0, highlightthickness=0)
+        self.canvas = tk.Canvas(self.win, width=400, height=400, bd=0, highlightthickness=0)
         self.canvas.pack()
+        self._open=True     # variable to keep track of open window (DO NOT CHANGE)
     
         self.ball = Ball(self.canvas, "red")
         self.ball.width = 10
         self.ball.height= 10
-        self.ball.x = 50
-        self.ball.y = 50
+        self.ball.x = 200
+        self.ball.y = 200
         
         self.player = Player(self.canvas)
         self.player.x = 400
         self.player.y = 200
+        
+        self.thread = DrawThread(self)
 
     
-    def update(self):
-        # put this in the main loop
+    def _update(self):
+        # DON'T CALL THIS
         self.ball.draw()
         self.player.draw()
         
         self.win.update_idletasks()
         self.win.update()
-        time.sleep(0.033)
+        
+    def update(self):
+        # put this in the main loop
+        if (self.thread.done == True):
+            # run the thread
+            
+            self.thread.done = False
+            self.thread.run()
+        
+    def close(self):
+        # close the window
+        self.win.destroy()
+        self._open = False
         
