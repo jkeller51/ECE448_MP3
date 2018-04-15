@@ -37,11 +37,7 @@ if __name__ == '__main__':
         Game.update(window)
         
         if (Game.lost == True and Lflag == False):
-            print("You lose!")
-            Lflag = True
-        
-        
-        
+            Game.reset()
 
     print("Game ended.")
     

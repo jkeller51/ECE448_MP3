@@ -15,6 +15,8 @@ def intersect_line(x1,y1,x2,y2,linex):
 
 class PongModel:
     def __init__(self, ballX, ballY, bvelocityX, bvelocityY, paddleY):
+        self.initial = (ballX, ballY, bvelocityX, bvelocityY, paddleY)
+        
         self.ball_x = ballX
         self.ball_y = ballY
         self.ball_velocity_x = bvelocityX
@@ -28,20 +30,10 @@ class PongModel:
         self.score = 0
         self.lost = False
         
-    def reset(self, ballX, ballY, bvelocityX, bvelocityY, paddleY):
+    def reset(self):
         """ Reset everything."""
-        self.ball_x = ballX
-        self.ball_y = ballY
-        self.ball_velocity_x = bvelocityX
-        self.ball_velocity_y = bvelocityY
-        self.paddle_x = 1.0 #this is a constant
-        self.paddle_y = paddleY
-        
-        self.ball_lastx = ballX
-        self.ball_lasty = ballY
-        
-        self.score = 0
-        self.lost = False
+        ballX, ballY, bvelocityX, bvelocityY, paddleY = self.initial
+        self.__init__(ballX, ballY, bvelocityX, bvelocityY, paddleY)
 
     def move(self, proposed_move = 0):
         """
