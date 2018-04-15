@@ -9,11 +9,9 @@ def intersect_line(x1,y1,x2,y2,linex):
     """
     Determine where the line drawn through (x1,y1) and (x2,y2)
     will intersect the line x=linex
-    """
-    
+    """    
     return ((y2-y1)/(x2-x1))*(linex-x1)+y1
     
-
 
 class PongModel:
     def __init__(self, ballX, ballY, bvelocityX, bvelocityY, paddleY):
@@ -27,9 +25,23 @@ class PongModel:
         self.ball_lastx = ballX
         self.ball_lasty = ballY
         
+        self.score = 0
         self.lost = False
-
-
+        
+    def reset(self, ballX, ballY, bvelocityX, bvelocityY, paddleY):
+        """ Reset everything."""
+        self.ball_x = ballX
+        self.ball_y = ballY
+        self.ball_velocity_x = bvelocityX
+        self.ball_velocity_y = bvelocityY
+        self.paddle_x = 1.0 #this is a constant
+        self.paddle_y = paddleY
+        
+        self.ball_lastx = ballX
+        self.ball_lasty = ballY
+        
+        self.score = 0
+        self.lost = False
 
     def move(self, proposed_move = 0):
         """
@@ -43,8 +55,7 @@ class PongModel:
             self.paddle_y = 0.8
         elif self.paddle_y < 0:
             self.paddle_y = 0
-                
-      
+
     def move_up(self):
         self.move(-0.04)
         
@@ -55,7 +66,6 @@ class PongModel:
         """
         Update the window based on the internal state
         """
-        
         if gfx.thread.done == True:
             """
             we want to make sure we are only calculating the new position
@@ -68,7 +78,6 @@ class PongModel:
             self.ball_x += self.ball_velocity_x
             self.ball_y += self.ball_velocity_y
             
-            
             # check bouncing
             if (self.ball_y > 1 and self.ball_velocity_y > 0):
                 self.ball_velocity_y *= -1
@@ -80,6 +89,7 @@ class PongModel:
                 intersect_y = intersect_line(self.ball_lastx, self.ball_lasty, self.ball_x, self.ball_y, 1)
                 if (intersect_y >= self.paddle_y and intersect_y <= self.paddle_y + 0.2 and self.ball_lastx <= 1):
                     # we hit the paddle!
+                    self.score += 1
                     self.ball_x = 2*self.paddle_x - self.ball_x
                     
                     # randomize velocities
@@ -100,16 +110,12 @@ class PongModel:
                 else:
                     # missed the paddle. lost!
                     self.lost = True
-        
-        
+           
             gfx.player.y = self.paddle_y * gfx.height + gfx.player.height/2  # to be consistent with spec, y represents top of player
             gfx.ball.x = self.ball_x * gfx.width
             gfx.ball.y = self.ball_y * gfx.height
-            
-            
+                    
             gfx.update() # this happens on a different thread
-    
-    
 
 
     
