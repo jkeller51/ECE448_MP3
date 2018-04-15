@@ -15,9 +15,9 @@ class DrawThread(threading.Thread):
         self.done = True
         self.gfx = gfxobj
         
-    def run(self):
+    def run(self,fps):
         self.gfx._update()
-        time.sleep(0.033)
+        time.sleep(1/fps)
         self.done = True
 
 class Ball:
@@ -58,8 +58,12 @@ class GFX:
         self.win.title = "Pong"
         self.win.resizable(0,0)
         self.win.wm_attributes("-topmost", 1)
+        self.win.after(1, lambda: self.win.focus_force())
         
-        self.canvas = tk.Canvas(self.win, width=400, height=400, bd=0, highlightthickness=0)
+        self.width=400
+        self.height=400
+        
+        self.canvas = tk.Canvas(self.win, width=self.width, height=self.height, bd=0, highlightthickness=0)
         self.canvas.pack()
         self._open=True     # variable to keep track of open window (DO NOT CHANGE)
     
@@ -74,6 +78,7 @@ class GFX:
         self.player.y = 200
         
         self.thread = DrawThread(self)
+        self.fps = 30
 
     
     def _update(self):
@@ -90,7 +95,7 @@ class GFX:
             # run the thread
             
             self.thread.done = False
-            self.thread.run()
+            self.thread.run(self.fps)
         
     def close(self):
         # close the window

@@ -1,6 +1,7 @@
 import graphics as gfx
 import time
 
+""" Example of how to use the gfx library """
 
 if __name__ == '__main__':
     
@@ -29,7 +30,3 @@ if __name__ == '__main__':
         
 
     print("Game ended.")
-
-    
-    
-#tk.mainloop()
