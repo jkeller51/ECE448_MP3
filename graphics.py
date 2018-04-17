@@ -50,10 +50,10 @@ class Player:
 
 
 class Wall:
-    def __init__(self, canvas):
+    def __init__(self, canvas, wall_x=0):
         self.canvas = canvas
-        self.id = canvas.create_rectangle(0, 0, 10, 400, fill="black")
-        self.x = 0
+        self.id = canvas.create_rectangle(wall_x, 0, wall_x+10, 400, fill="black")
+        self.x = wall_x
         self.y = 0
         self.width=10
         self.height=400
@@ -87,7 +87,7 @@ class GFX:
         self.player.x = player_x * 400
         self.player.y = 200
         
-        self.wall = Wall(self.canvas)
+        self.wall = Wall(self.canvas, wall_x*self.width)
         self.wall.x = wall_x * 400
         
         self.thread = DrawThread(self)
