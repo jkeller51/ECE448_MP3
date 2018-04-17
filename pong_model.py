@@ -112,9 +112,9 @@ class PongModel:
             self.ball_y += self.ball_velocity_y
             
             # check bouncing
-            if (self.ball_y > 1 and self.ball_velocity_y > 0):
+            if (self.ball_y >= 1 and self.ball_velocity_y > 0):
                 self.ball_velocity_y *= -1
-            elif (self.ball_y < 0 and self.ball_velocity_y < 0):
+            elif (self.ball_y <= 0 and self.ball_velocity_y < 0):
                 self.ball_velocity_y *= -1
             elif self.bounce_wall(gfx):
                 self.ball_velocity_x *= -1
