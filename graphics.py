@@ -91,7 +91,7 @@ class GFX:
         self.wall.x = wall_x * 400
         
         self.thread = DrawThread(self)
-        self.fps = 300000
+        self.fps = 30
 
     
     def _update(self):
