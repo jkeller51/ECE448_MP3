@@ -10,14 +10,14 @@ from pong_model import *
 import numpy as np
 
 class SARSA(object):
-    def __init__(self, PongEnvironment, Window):
+    def __init__(self, PongEnvironment, Window, explore=5e4, threshold=2e3):
         # Environment
         self.environment = PongEnvironment
         self.window = Window
         
         # Allow to explore
-        self.explore = 1e4
-        self.threshold = 2e3
+        self.explore = explore
+        self.threshold = threshold
         self.step_count = 0
         
         # Discrete position
@@ -73,11 +73,6 @@ class SARSA(object):
         self.ball_x -= 1
         self.ball_y -= 1
         self.paddle_y -= 1
-        
-        # update positions in the environment
-        self.environment.ball_x = self.bins_ball[self.ball_x]
-        self.environment.ball_y = self.bins_ball[self.ball_y]
-        self.environment.paddle_y = self.bins_paddle[self.paddle_y]
     
     def _discretize_velocity_(self):
         """ Making velocities discrete
@@ -89,20 +84,15 @@ class SARSA(object):
         """
         if self.environment.ball_velocity_x > 0:
             self.ball_velocity_x = 1
-            self.environment.ball_velocity_x = self.bins_ball[1]
         else:
             self.ball_velocity_x = -1
-            self.environment.ball_velocity_x = self.bins_ball[1] * -1
         
         if self.environment.ball_velocity_y > 0.015:
             self.ball_velocity_y = 1
-            self.environment.ball_velocity_y = self.bins_ball[1]
         elif self.environment.ball_velocity_y < -0.015:
             self.ball_velocity_y = -1
-            self.environment.ball_velocity_y = self.bins_ball[1] * -1
         else:
             self.ball_velocity_y = 0
-            self.environment.ball_velocity_y = 0
     
     def _get_current_state_(self):
         """ Get current state."""
@@ -144,15 +134,13 @@ class SARSA(object):
         
         # Take action
         a = self.actions[idx]
-        self.paddle_y = self.paddle_y + a
-        if self.paddle_y >= 11:
-            self.paddle_y = 11
-        elif self.paddle_y <= 0:
-            self.paddle_y = 0
+        self.environment.paddle_y += a * 0.04
+        if self.environment.paddle_y <= 0:
+            self.environment.paddle_y = 0
+        elif self.environment.paddle_y >= 0.8:
+            self.environment.paddle_y = 0.8
         
         # Update environment
-        pos = self.bins_paddle[self.paddle_y]
-        self.environment.paddle_y = pos
         _ = self._get_current_state_()
         
         # Get reward
@@ -247,8 +235,8 @@ class SARSA(object):
                     print('Q table successfully saved!')
             
                 # Main loop
-                print('Step:{0:6d}\tQ-value:{1:.3f}\tScore:{2}\tAlpha:{3:.4f}' \
-                    .format(self.step_count, self.current_state_q, myscore, self.alpha))
+                print('Step:{0:6d}\tQ-value:{1:.3f}\tScore:{2}' \
+                    .format(self.step_count, self.current_state_q, myscore))
                 self._take_action_(self.action)            
                 self.next_state = self._get_current_state_()
                 self.action_ = self._choose_action_()
@@ -268,5 +256,5 @@ class SARSA(object):
                 self.step_count += 1
                 
             # Keep recording scores in every epoch
-            with open('log.txt', 'a') as f:
+            with open('sarsa_log.txt', 'a') as f:
                 f.write('{0}\n'.format(myscore))

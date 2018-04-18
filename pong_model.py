@@ -132,12 +132,10 @@ class PongModel:
                     V = random.uniform(-0.03,  0.03 )
                     temp_vx = -1*self.ball_velocity_x + U
                     temp_vy = -1*self.ball_velocity_y + V
-                    while (np.sqrt(temp_vx**2 + temp_vy**2) < 0.03):
-                        # better way to do this? maybe
-                        U = random.uniform(-0.015, 0.015)
-                        V = random.uniform(-0.03,  0.03 )
-                        temp_vx = -1*self.ball_velocity_x + U
-                        temp_vy = -1*self.ball_velocity_y + V
+                    if temp_vx >= 0 and temp_vx <= 0.03:
+                        temp_vx = 0.03
+                    elif temp_vx < 0 and temp_vx >= -0.03:
+                        temp_vx = -0.03
                         
                     self.ball_velocity_x = temp_vx
                     self.ball_velocity_y = temp_vy
