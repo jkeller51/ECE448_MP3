@@ -16,7 +16,8 @@ class SARSA(object):
         self.window = Window
         
         # Allow to explore
-        self.explore = 5e4
+        self.explore = 1e4
+        self.threshold = 2e3
         self.step_count = 0
         
         # Discrete position
@@ -122,11 +123,13 @@ class SARSA(object):
         if self.step_count < self.explore:
             return np.random.randint(low=-1, high=2)
         else:
-            action_temp = []
-            for action in self.actions:
-                s_a = state + (action,)
-                action_temp.append(self.q_table[s_a] / (self.count_table[s_a] + 1e-8))
-            return np.argmax(action_temp)
+            count_list = self.count_table[state]
+            not_threshold_idx = np.argwhere(count_list<=self.threshold).reshape(-1,)
+            if len(not_threshold_idx) < 3:
+                return np.random.choice(not_threshold_idx)
+            else:
+                action_temp = self.q_table[state]
+                return np.argmax(action_temp)
                 
     def _take_action_(self, idx):
         """ Take selected action, and observe reward
@@ -234,7 +237,7 @@ class SARSA(object):
                     break
                 
                 # Decay alpha
-                self.alpha = 1e6 / (1e6 + self.step_count)
+                self.alpha = 8e5 / (1e6 + self.step_count)
                 if self.alpha <= 0.5:
                     self.alpha = 0.5
                 
@@ -244,8 +247,8 @@ class SARSA(object):
                     print('Q table successfully saved!')
             
                 # Main loop
-                print('Step:{0:6d}\tQ-value:{1:.3f}\tScore:{2}' \
-                    .format(self.step_count, self.current_state_q, myscore))
+                print('Step:{0:6d}\tQ-value:{1:.3f}\tScore:{2}\tAlpha:{3:.4f}' \
+                    .format(self.step_count, self.current_state_q, myscore, self.alpha))
                 self._take_action_(self.action)            
                 self.next_state = self._get_current_state_()
                 self.action_ = self._choose_action_()
