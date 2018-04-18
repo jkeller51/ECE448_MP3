@@ -115,7 +115,7 @@ class SARSA(object):
         else:
             count_list = self.count_table[state]
             not_threshold_idx = np.argwhere(count_list<=self.threshold).reshape(-1,)
-            if len(not_threshold_idx) < 3:
+            if len(not_threshold_idx) > 0:
                 return np.random.choice(not_threshold_idx)
             else:
                 action_temp = self.q_table[state]
