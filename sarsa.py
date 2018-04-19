@@ -10,10 +10,32 @@ from pong_model import *
 import numpy as np
 
 class SARSA(object):
-    def __init__(self, PongEnvironment, Window, explore=5e4, threshold=2e3):
+    def __init__(self, PongEnvironment, Window, alpha=0.5, explore=5e4, 
+                 threshold=2e3, log=True, log_file='sarsa_log.txt', mode='train'):
+        """ Sarsa model object. Q table is automatically saved.
+        
+        Args:
+            PongEnvironment(pong_model.PongModel)
+            Window(graphics.GFX)
+            alpha(float): learning rate
+            explore(float): number of steps, during which an action is randomly
+                            chosen
+            threshold(float): N(s, a) threshold
+            log(boolean): whether or not to log game results
+            log_file(str): log file name (of game results)
+            mode(str): when 'train', endless training;
+                       else, recording 200 games.
+        Returns:
+            (None)
+        """
         # Environment
         self.environment = PongEnvironment
         self.window = Window
+        
+        # Log info
+        self.log = log
+        self.log_file = log_file
+        self.mode = mode
         
         # Allow to explore
         self.explore = explore
@@ -28,14 +50,14 @@ class SARSA(object):
         self.ball_velocity_y = None
         self.paddle_y = None
         
-        # Used to discrete position
+        # Used to discretize position
         min_ = 0
         max_ = (400 - 80) / 400
         self.bins_paddle = np.arange(min_, max_+0.0001, (max_-min_)/11)
         self.bins_ball = np.arange(0, 1.0001, 1/11)
         
-        # Some important variables
-        self.alpha = 1
+        # Learning parameters
+        self.alpha = alpha
         self.gamma = 0.8
         
         # Implemented as a matrix
@@ -162,6 +184,7 @@ class SARSA(object):
         # Update count table
         self.count_table[q_s_a] += 1
         
+        # Update Q table
         current_state_q = self.q_table[q_s_a]
         self.current_state_q = current_state_q
         if self.reward == -1:
@@ -206,7 +229,11 @@ class SARSA(object):
         Returns:
             (None)
         """
-        while True:
+        episode_ct = 0
+        
+        # If 'mode == train', then endless
+        # else record 200 consecutive games
+        while (self.mode == 'train') or (episode_ct < 200):
             # Avoid raising errors when window is closed
             if self.window._open == False:
                 break
@@ -219,11 +246,6 @@ class SARSA(object):
                 # Avoid raising errors when window is closed
                 if self.window._open == False:
                     break
-                
-                # Decay alpha
-                self.alpha = 1e6 / (1e6 + self.step_count)
-                if self.alpha <= 0.5:
-                    self.alpha = 0.5
                 
                 # Save Q table
                 if (self.step_count % 10000 == 0):
@@ -252,5 +274,12 @@ class SARSA(object):
                 self.step_count += 1
                 
             # Keep recording scores in every epoch
-            with open('sarsa_log.txt', 'a') as f:
-                f.write('{0}\n'.format(myscore))
+            if self.log == True:
+                with open(self.log_file, 'a') as f:
+                    f.write('{0}\n'.format(myscore))
+            
+            # Counting epicodes
+            episode_ct += 1
+        
+        # Close the window
+        self.window.close()
