@@ -18,6 +18,7 @@ class SARSA(object):
         # Allow to explore
         self.explore = explore
         self.threshold = threshold
+        self.epsilon = 0.15
         self.step_count = 0
         
         # Discrete position
@@ -115,7 +116,8 @@ class SARSA(object):
         else:
             count_list = self.count_table[state]
             not_threshold_idx = np.argwhere(count_list<=self.threshold).reshape(-1,)
-            if len(not_threshold_idx) > 0:
+            prob = np.random.uniform(low=0.0, high=1.0)
+            if (len(not_threshold_idx) > 0) and (prob < self.epsilon):
                 return np.random.choice(not_threshold_idx)
             else:
                 action_temp = self.q_table[state]
@@ -128,10 +130,7 @@ class SARSA(object):
             idx(int)
         Returns:
             (None)
-        """
-        # Dummy, forced discretize
-        _ = self._get_current_state_()
-        
+        """        
         # Take action
         a = self.actions[idx]
         self.environment.paddle_y += a * 0.04
@@ -139,9 +138,6 @@ class SARSA(object):
             self.environment.paddle_y = 0
         elif self.environment.paddle_y >= 0.8:
             self.environment.paddle_y = 0.8
-        
-        # Update environment
-        _ = self._get_current_state_()
         
         # Get reward
         original_score = self.environment.score
@@ -225,7 +221,7 @@ class SARSA(object):
                     break
                 
                 # Decay alpha
-                self.alpha = 8e5 / (1e6 + self.step_count)
+                self.alpha = 1e6 / (1e6 + self.step_count)
                 if self.alpha <= 0.5:
                     self.alpha = 0.5
                 
