@@ -67,7 +67,7 @@ if __name__ == '__main__':
     Network = DNN.NeuralNetwork(5,3)   # 5 inputs, 3 outputs
     Network.add_hidden_layer(16, activation=ReLu)
     Network.add_hidden_layer(16, activation=ReLu)
-    Network.generate_weights(0.1)
+    Network.generate_weights(1)
     
     X = [0.5,0.5,0.03,0.01,0.4]
     
@@ -79,7 +79,8 @@ if __name__ == '__main__':
 
     print("Training Neural Network...")
     
-    for _ in range(500):
+    for _ in range(100):
+        
         # generate a new batch
         batch = []
         batch_y = []
@@ -94,8 +95,10 @@ if __name__ == '__main__':
         # train
         a = Network.forward(batch)
         Network.backward(batch_y[0])
-        loss = Network.update_weights(0.001)
-        print(loss)
+        print("dW", Network.dW)
+        loss = Network.update_weights(0.1)
+        print("L:", loss)
+        print(Network.forward([training_data[0], training_data[1000], training_data[2000]]))
     
     print("Training Done. Loss =",loss)
     a = Network.forward(training_data)
