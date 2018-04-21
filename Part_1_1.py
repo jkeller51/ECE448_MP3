@@ -16,7 +16,8 @@ if __name__ == '__main__':
     window.fps = 3e16
     
     # Set up model
-    model = SARSA(environment, window, explore=0, threshold=30)
+    model = SARSA(environment, window, alpha=0.5, gamma=0.99, explore=-1, threshold=-1, 
+                  log=True, log_file='sarsa_log.txt', mode='train')
     
     # Training
     model.train()

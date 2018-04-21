@@ -10,9 +10,10 @@ from pong_model import *
 import numpy as np
 
 class SARSA(object):
-    def __init__(self, PongEnvironment, Window, alpha=0.5, explore=5e4, 
+    def __init__(self, PongEnvironment, Window, alpha=0.5, gamma=0.9, explore=5e4, 
                  threshold=2e3, log=True, log_file='sarsa_log.txt', mode='train'):
-        """ Sarsa model object. Q table is automatically saved.
+        """ SARSA model object. 
+        Q table is automatically saved every 10,000 steps.
         
         Args:
             PongEnvironment(pong_model.PongModel)
@@ -58,7 +59,7 @@ class SARSA(object):
         
         # Learning parameters
         self.alpha = alpha
-        self.gamma = 0.8
+        self.gamma = gamma
         
         # Implemented as a matrix
         # shape (ballx, bally, ballvelox, ballveloy, paddley, action)
@@ -140,6 +141,7 @@ class SARSA(object):
             not_threshold_idx = np.argwhere(count_list<=self.threshold).reshape(-1,)
             prob = np.random.uniform(low=0.0, high=1.0)
             if (len(not_threshold_idx) > 0) and (prob < self.epsilon):
+                print('Yo')
                 return np.random.choice(not_threshold_idx)
             else:
                 action_temp = self.q_table[state]
