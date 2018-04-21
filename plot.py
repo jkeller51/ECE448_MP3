@@ -25,5 +25,8 @@ if __name__ == '__main__':
     
     N = len(mean_list)
     plt.plot(range(N), mean_list, 'b-', label='mean')
+    plt.xlabel('Every 200 Episodes')
+    plt.ylabel('Mean Score')
+    plt.grid(linestyle='--')
     plt.legend()
-    plt.show()
+    plt.savefig('mean_score.png', dpi=1600)
