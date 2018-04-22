@@ -14,20 +14,25 @@ def vectorize(z):
         z = np.reshape(z, (1, len(z)))
     return z
 
+def logit(p):
+    return np.log(p/(1-p))
+
+def softmax(z):
+    z -= np.max(z) # adjustment to avoid overflow, does not affect result
+    expz = np.exp(z)
+    summ = np.sum(expz, axis=1)
+    outp = np.zeros(z.shape)
+    for i in range(np.size(z, axis=0)):
+        outp[i] = expz[i]/summ[i]
+    return outp
+        
+
 def cross_entropy(a, y):
-    c=[0,0,0]
-    for val in y:
-        if val == 2:
-            c[2]+=1
-        elif val == 1:
-            c[1]+=1
-        elif val == 0:
-            c[0]+=1
     a = np.squeeze(a)
     expa = np.exp(a)
-    if (len(expa.shape) == 2):
+    if (len(expa.shape) == 2): # batch processing
         summ = np.sum(expa, axis=1)
-    else:
+    else:  # single training sample
         summ = np.sum(expa)
     L = 0
     da = np.zeros(a.shape)
@@ -213,14 +218,13 @@ class NeuralNetwork:
         self.a = a  # cache for backprop
         self.z = z
         
-        return a[len(a)-1]
+        return softmax(a[len(a)-1])
                 
     
     def backward(self, y):
         # y is the expected output
-        loss, dF = cross_entropy(self.a[len(self.a)-1], y)
+        loss, dF = cross_entropy(softmax(self.a[len(self.a)-1]), y)
         self.loss += loss
-        
         dW=[]
         
         # assume output activation is linear (no activation)
@@ -235,7 +239,7 @@ class NeuralNetwork:
             da = np.matmul(vectorize(dz),np.transpose(W))
             if (len(self.a[idx+1].shape) == 1):
                 self.a[idx+1] = np.reshape(self.a[idx+1], (1, len(self.a[idx+1])))
-            dW.insert(0, np.matmul(np.transpose(self.a[idx+1]), vectorize(dz))/len(y))
+            dW.insert(0, np.matmul(np.transpose(self.a[idx+1]), vectorize(dz)))
             if (self.hlayers[idx].bias == True):
                 dW[0] = np.vstack([dW[0], np.sum(vectorize(dz),axis=0)])   # add bias db
             dz = _derivative_ReLU(da, self.a[idx])
@@ -264,6 +268,11 @@ class NeuralNetwork:
         
         for i in range(len(self.weights)):
             self.weights[i] -= alpha*self.dW[i]
+        
+#        for i in range(len(self.weights)):
+#            # update weights, but not biases
+#            self.weights[len(self.weights)-1-i][0:-1,:] -= alpha*self.dW[len(self.weights)-1-i][0:-1,:]
+#        
         
         # reset for next batch
         self.loss=0

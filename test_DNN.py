@@ -74,13 +74,16 @@ for i in range(200):
     Network.backward(batch_y)
     dW = Network.dW
     W=Network.weights
+#    print(W[-1][0:5])
     aa = Network.a
 #    print("dW", Network.dW)
     loss = Network.update_weights(0.1)
+    print(loss)
     if (i%20 == 0):
         YY = np.argmax(a,axis=1)
         error = BATCH_SIZE-sum(np.equal(batch_y,YY))
         print(i, "epochs. Error:", error)
+        print("# 2s:",np.sum(np.equal(YY,2)))
 
 print("Training Done. Loss =",loss)
 a = Network.forward(X)
