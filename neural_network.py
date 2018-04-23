@@ -5,6 +5,7 @@ Created on Sun Apr 22 15:12:41 2018
 @author: Haokun Li
 """
 
+import os
 import numpy as np
 import pylab as plt
 
@@ -117,14 +118,18 @@ class Network(object):
             # Add bias column
             r, c = myinput.shape
             bias_column = np.ones((r, 1))
-            myinput = np.append(myinput, bias_column, axis=1)
+            if self.bias:
+                myinput = np.append(myinput, bias_column, axis=1)
             
             # Matrix multiplication
             Z = np.matmul(myinput, self.W[layer])
             self.Z.append(Z)
             
             # Activation function
-            A = self._relu_(Z)
+            if layer != self.layers:
+                A = self._relu_(Z)
+            else:
+                A = Z.copy()
             self.A.append(A)
 
             # Next layer            
@@ -145,23 +150,8 @@ class Network(object):
         """
         n, dim = f.shape
         
-        exp_f = np.exp(f)
-        sum_exp_f = np.sum(exp_f, axis=1)
-        log_exp_f = np.log(sum_exp_f)
-        
-        true_f = np.zeros_like(y)
-        dF = np.zeros_like(f)
-        one_indicator = np.zeros_like(f)
-        for i in range(n):
-            label = int(y[i])
-            # For computing loss
-            true_f[i] = f[i, label]
-            
-            # For computing derivative
-            one_indicator[i, label] = 1
-            dF[i, :] = -1/n * (one_indicator[i, :] - exp_f[i, :] / sum_exp_f[i])
-            
-        loss = -1/n * np.sum(true_f - log_exp_f)        
+        loss = 0.5/n * np.sum(np.square(f - y))
+        dF = 1/n * (f - y)
         return loss, dF
     
     def _backward(self, f, y):
@@ -183,9 +173,11 @@ class Network(object):
         for count in range(self.layers, -1, -1):
             # Get dZ
             if count == self.layers:
-                dZ = np.multiply(temp, self._derivative_relu(self.A[count+1]))
-            else:
+                dZ = temp.copy()
+            elif (self.bias == True):
                 dZ = np.multiply(temp[:, 0:-1], self._derivative_relu(self.A[count+1]))
+            elif (self.bias == False):
+                dZ = np.multiply(temp, self._derivative_relu(self.A[count+1]))
             self.dZ.insert(0, dZ)
             
             # Get dW, dB, previous dA
@@ -208,29 +200,79 @@ class Network(object):
             (None)
         """
         for count in range(self.layers+1):
-            self.W[count][0:-1, :] -= self.lr * self.dW[count]
-            self.W[count][-1, :] -= self.lr * self.dB[count]
+            if self.bias == True:
+                self.W[count][0:-1, :] -= self.lr * self.dW[count]
+                self.W[count][-1, :] -= self.lr * self.dB[count]
+            else:
+                self.W[count][:, :] -= self.lr * self.dW[count]
     
-    def save_weights(self, path):
+    def save_weights(self):
         """ Save weights to files.
         
         Args:
-            path(str)
+            (None)
         Returns:
             (None)
         """
-        pass
+        # Structure
+        filename = "./q_weights/structure.txt"
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        with open(filename, 'w') as myfile:
+            myfile.write(' '.join(str(x) for x in self.hidden_layers))
+        
+        # Parameters
+        filename = "./q_weights/parameters.txt"
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        with open(filename, 'w') as myfile:
+            myfile.write('bias,{0}\n'.format(self.bias))
+            myfile.write('activation,{0}\n'.format(self.activation))
+            myfile.write('epoch,{0}\n'.format(self.epoch))
+        
+        # Weights
+        for i in range(len(self.W)):
+            filename = "./q_weights/weight_{0}.txt".format(i)
+            np.savetxt(filename, self.W[i])
+        
+        # Print info
+        os.path.dirname('..')
+        print('Weights successfully saved.')
     
-    def load_weights(self, path):
+    def load_weights(self):
         """ Load weight matrices from files.
         
         Args:
-            path(str)
+            (None)
         Returns:
             (None)
         """
-        # Update self.W automatically
-        pass
+        # Structure
+        structure = np.genfromtxt('./q_weights/structure.txt', dtype=np.int16)
+        self.hidden_layers = tuple(structure)
+        self.layers = len(self.hidden_layers)
+        
+        # Parameters
+        filename = "./q_weights/parameters.txt"
+        with open(filename, 'r') as myfile:
+            for line in myfile:
+                temp = line.strip().split(',')
+                if temp[0] == 'bias':
+                    self.bias = bool(temp[1])
+                elif temp[0] == 'activation':
+                    self.activation = temp[1]
+                elif temp[0] == 'epoch':
+                    self.epoch = int(temp[1])
+                else:
+                    print('Unknown argument: {0}'.format(temp[0]))
+        
+        # Weights
+        self.W = []
+        for i in range(self.layers+1):
+            myfile = './q_weights/weight_{0}.txt'.format(i)
+            w_ = np.genfromtxt(myfile)
+            self.W.append(w_)
+        
+        # Log info
+        print('Successfully loaded!')
     
     def train(self, X, y):
         """ Training.
@@ -241,11 +283,14 @@ class Network(object):
         Returns:
             (None)
         """
-        count_step = 0
         loss_list = []
+        
+        # Shuffle at the beginning of each epoch
         for i in range(self.epoch):
             row, col = X.shape
             X, y = self._shuffle_(X, y)
+            
+            # Train batch
             for idx in range(row // self.batch_size):
                 start = idx * self.batch_size
                 end = (idx + 1) * self.batch_size                
@@ -256,11 +301,17 @@ class Network(object):
                 loss, dF = self._loss(f, y_)
                 self._backward(f, y_)
                 self._update()
-                print('loss:{0:.6f}'.format(loss))
-                loss_list.append(loss)
-                count_step += 1
-        plt.plot(range(count_step), loss_list)
-        plt.show()
+            
+            loss, _ = self._loss(f, y_)
+            print('epoch:{0:3d}\tloss:{1:.6f}'.format(i, loss))
+            loss_list.append(loss)
+            
+        # Plot training curve
+        plt.plot(range(self.epoch), loss_list)
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.savefig('deep_q_learning_curve.png', dpi=1600)
+        print('Learning curve saved.')
     
     def predict(self, X):
         """ Training.
@@ -276,15 +327,14 @@ class Network(object):
             if len(f.shape) == 2:
                 r, c = f.shape
                 bias_column = np.ones((r, 1))
-                f = np.append(f, bias_column, axis=1)
-            else:
+                if self.bias == True:
+                    f = np.append(f, bias_column, axis=1)
+            elif self.bias == True:
                 f = np.append(f, 1)
             
             f = np.matmul(f, self.W[ct])
-            f = self._relu_(f)
+            if ct != self.layers:
+                f = self._relu_(f)
         
-        if len(f.shape) == 2:
-            predict = np.argmax(f, axis=1)
-        else:
-            predict = np.argmax(f)
+        predict = f
         return predict
