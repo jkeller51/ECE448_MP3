@@ -25,63 +25,49 @@ def softmax(z):
     for i in range(np.size(z, axis=0)):
         outp[i] = expz[i]/summ[i]
     return outp
-        
+
+def derivative_softmax(F):
+    # input: softmax outputs F
+    return np.multiply(F,(1-F))
 
 def cross_entropy(a, y):
     a = np.squeeze(a)
-    expa = np.exp(a)
-    if (len(expa.shape) == 2): # batch processing
-        summ = np.sum(expa, axis=1)
-    else:  # single training sample
-        summ = np.sum(expa)
     L = 0
     da = np.zeros(a.shape)
     if (len(a.shape) == 2):
         # batch processing
         for i in range(len(y)):
             onef = np.zeros(np.size(a,1))
-            L += (a[i,int(y[i])] - np.log(summ[i]))
             onef[int(y[i])] = 1
-            da[i] = (onef-expa[i]/summ[i])
+            L +=  np.log(a[i,int(y[i])])
+            da[i] = onef*(1/a[i,int(y[i])])
         L *= -1/(len(a))
         da *= -1/(len(a))
         
-    else:
-        # single input
-        onef = np.zeros(a.shape)
-        L = -1*(a[int(y)] - np.log(summ))
-        onef[int(y)] = 1
-        da = (-1)*(onef-expa/summ)
+#    else:
+#        # single input
+#        onef = np.zeros(a.shape)
+#        L = -1*(a[int(y)] - np.log(summ))
+#        onef[int(y)] = 1
+#        da = (-1)*(onef-expa/summ)
     # calculate gradient respect to output
     
     
     return L, da
 
-#def _derivative_ReLU(z):
-#    outp = np.zeros(z.shape)
-#    if len(z.shape) == 2:
-#        for i in range(z.shape[0]):
-#            for j in range(z.shape[1]):
-#                if (z[i,j] > 0):
-#                    outp[i,j] = 1
-#    else:
-#        for i in range(z.shape[0]):
-#            if (z[i] > 0):
-#                outp[i] = 1
-#    return outp
-    
-def _derivative_ReLU(da, z):
-    outp = np.zeros(da.shape)
-    if len(da.shape) == 2:
-        for i in range(da.shape[0]):
-            for j in range(da.shape[1]):
-                if (da[i,j] != 0):
-                    outp[i,j] = da[i,j]
+def _derivative_ReLU(z):
+    outp = np.zeros(z.shape)
+    if len(z.shape) == 2:
+        for i in range(z.shape[0]):
+            for j in range(z.shape[1]):
+                if (z[i,j] > 0):
+                    outp[i,j] = 1
     else:
-        for i in range(da.shape[0]):
-            if (da[i] != 0):
-                outp[i] = da[i]
+        for i in range(z.shape[0]):
+            if (z[i] > 0):
+                outp[i] = 1
     return outp
+    
 
 def affine(X,weights,bias=True):
     if (bias == True): # the last weight of each column is the bias
@@ -202,6 +188,7 @@ class NeuralNetwork:
         z = []
         
         a.append(X)
+        z.append(X)
         
         z.append(affine(X, self.weights[0]))
         a.append(np.squeeze(self.hlayers[0].activate(z[-1]))) # apply activation function at first hidden layer
@@ -223,26 +210,39 @@ class NeuralNetwork:
     
     def backward(self, y):
         # y is the expected output
-        loss, dF = cross_entropy(softmax(self.a[len(self.a)-1]), y)
+        F = softmax(self.a[len(self.a)-1])
+        loss, dF = cross_entropy(F, y)
         self.loss += loss
         dW=[]
         
         # assume output activation is linear (no activation)
-        dz=dF
+#        dz=np.multiply(dF, derivative_softmax(softmax(self.a[len(self.a)-1])))
+        onef = np.zeros((len(y),np.size(self.a[-1],axis=1)))
+        for i in range(len(y)):
+            onef[i,int(y[i])] = 1
+            
+        dz = (1/len(y)) * (F - onef)
         
         for i in range(0, len(self.hlayers)):
             idx = len(self.hlayers)-1-i
+            
+            self.a[idx+1] = vectorize(self.a[idx+1])
+            
+            # calculate dL/dW
+            dW.insert(0, np.matmul(np.transpose(self.a[idx+1]), vectorize(dz)))
+            
+            if (self.hlayers[idx].bias == True):
+                dW[0] = np.vstack([dW[0], np.sum(vectorize(dz),axis=0)])   # add bias db
+            
             if (self.hlayers[idx].bias == True):
                 W = self.weights[len(self.weights)-1-i][0:-1,:]
             else:
                 W = self.weights[len(self.weights)-1-i]
+                
             da = np.matmul(vectorize(dz),np.transpose(W))
-            if (len(self.a[idx+1].shape) == 1):
-                self.a[idx+1] = np.reshape(self.a[idx+1], (1, len(self.a[idx+1])))
-            dW.insert(0, np.matmul(np.transpose(self.a[idx+1]), vectorize(dz)))
-            if (self.hlayers[idx].bias == True):
-                dW[0] = np.vstack([dW[0], np.sum(vectorize(dz),axis=0)])   # add bias db
-            dz = _derivative_ReLU(da, self.a[idx])
+            
+            
+            dz = da*_derivative_ReLU(self.z[idx+1])
             
         # input to first hidden layer
         if (self.inputBias == True):
@@ -251,8 +251,8 @@ class NeuralNetwork:
             W = self.weights[0]
         if (len(self.a[0].shape) == 1):
                 self.a[0] = np.reshape(self.a[0], (1, len(self.a[0])))
-        da = np.matmul(vectorize(dz), np.transpose(W))
-        dW.insert(0, np.matmul(np.transpose(self.a[0]), vectorize(dz))/len(y))
+                
+        dW.insert(0, np.matmul(np.transpose(self.a[0]), vectorize(dz)))
         if (self.inputBias == True):
                 dW[0] = np.vstack([dW[0], np.sum(vectorize(dz),axis=0)])
         
@@ -272,7 +272,7 @@ class NeuralNetwork:
 #        for i in range(len(self.weights)):
 #            # update weights, but not biases
 #            self.weights[len(self.weights)-1-i][0:-1,:] -= alpha*self.dW[len(self.weights)-1-i][0:-1,:]
-#        
+##        
         
         # reset for next batch
         self.loss=0

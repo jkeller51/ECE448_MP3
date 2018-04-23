@@ -40,7 +40,7 @@ def load_data(fname):
     return data, y
 
 
-BATCH_SIZE = 100
+BATCH_SIZE = 200
 
 Network = DNN.NeuralNetwork(5,3)   # 2 inputs, 3 outputs
 Network.add_hidden_layer(256, activation=ReLu, bias=True)
@@ -56,7 +56,7 @@ X, Y = load_data("./data/expert_policy.txt")
 
 print("Training Neural Network...")
 
-for i in range(200):
+for i in range(500):
     
     # generate a new batch
     batch = []
@@ -77,7 +77,7 @@ for i in range(200):
 #    print(W[-1][0:5])
     aa = Network.a
 #    print("dW", Network.dW)
-    loss = Network.update_weights(0.1)
+    loss = Network.update_weights(5*0.98**i)
     print(loss)
     if (i%20 == 0):
         YY = np.argmax(a,axis=1)
