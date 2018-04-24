@@ -40,7 +40,7 @@ def accuracy(nn, X, y):
     acc = np.sum(a==action) / len(y)
     print('Accuracy:{0:.4f}'.format(acc))
 
-def game(N, window, environment, nn):
+def simulate_game(N, window, environment, nn):
     """ Training.
     Args:
         N(int): N test games
@@ -83,10 +83,11 @@ def game(N, window, environment, nn):
         # Counting epicodes
         episode_ct += 1
         total_score += myscore
-        print(total_score)
+        print('Episode:{0}\tScore:{1}'.format(episode_ct, myscore))
         
     # Close the window
-    window.close()
+    if window._open:
+        window.close()
     return total_score / N
 
 if __name__ == '__main__':
@@ -94,7 +95,8 @@ if __name__ == '__main__':
     X, y = load_data('./data/expert_q.txt')
     
     # Initialize the model
-    nn = Network(lr=9e-2, epoch=1000, bias=True)
+    nn = Network(hidden_layers=(256, 256, 256, 256), lr=9e-2, 
+                 epoch=600, bias=True, batch_size=64)
     try:
         nn.load_weights()
     except:
@@ -107,8 +109,10 @@ if __name__ == '__main__':
     accuracy(nn, X, y)
     print()
     
-    # Play game
+    # Simulate 1,000 games
+    N = 1000
     environment = pm.PongModel(0.5, 0.5, 0.03, 0.01, 0.4)
     window = gfx.GFX()
-    window.fps = 3e16
-    avg_score = game(1000, window, environment, nn)
+    window.fps = 4e16
+    avg_score = simulate_game(N, window, environment, nn)
+    print('Avg score of {0} games:{1:.3f}'.format(N, avg_score))
