@@ -217,13 +217,13 @@ class NeuralNetwork:
         self.loss += loss
         dW=[]
         
-        # assume output activation is linear (no activation)
-#        dz=np.multiply(dF, derivative_softmax(softmax(self.a[len(self.a)-1])))
-        onef = np.zeros((len(y),np.size(self.a[-1],axis=1)))
-        for i in range(len(y)):
-            onef[i,int(y[i])] = 1
-            
-        dz = (1/len(y)) * (F - onef)
+        dz=np.multiply(dF, derivative_softmax(softmax(self.a[len(self.a)-1])))
+#        onef = np.zeros((len(y),np.size(self.a[-1],axis=1)))
+#        for i in range(len(y)):
+#            onef[i,int(y[i])] = 1
+#            
+#        dz = (1/len(y)) * (F - onef)
+#        dz = dF
         
         for i in range(0, len(self.hlayers)):
             idx = len(self.hlayers)-1-i

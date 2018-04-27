@@ -41,7 +41,7 @@ def load_data(fname):
     return data, y
 
 
-BATCH_SIZE = 50
+BATCH_SIZE = 1000
 
 Network = DNN.NeuralNetwork(5,3)   # 2 inputs, 3 outputs
 Network.add_hidden_layer(256, activation=ReLu, bias=True)
@@ -55,9 +55,14 @@ Y=[]
 # load data
 X, Y = load_data("./data/expert_policy.txt")
 
+means = np.mean(X, axis=0)
+stds = np.std(X, axis=0)
+for i in range(np.size(X, axis=0)):
+    X[i] = np.divide(X[i]-means, stds).tolist()
+    
 print("Training Neural Network...")
 loss=[]
-for i in range(5000):
+for i in range(100):
     
     # generate a new batch
     batch = []
