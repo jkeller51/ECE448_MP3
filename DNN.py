@@ -4,6 +4,8 @@ Created on Wed Mar 28 11:32:27 2018
 
 @author: jkell
 """
+
+
 import numpy as np
 
 sgn = lambda inp: np.sign(inp)
@@ -40,7 +42,7 @@ def cross_entropy(a, y):
             onef = np.zeros(np.size(a,1))
             onef[int(y[i])] = 1
             L +=  np.log(a[i,int(y[i])])
-            da[i] = onef*(1/a[i,int(y[i])])
+            da[i] = onef-a[i,:]
         L *= -1/(len(a))
         da *= -1/(len(a))
         

@@ -7,6 +7,7 @@ Created on Thu Apr 19 10:00:22 2018
 import DNN
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 
 def _ReLu(z):
     outp = np.zeros(z.shape)
@@ -40,7 +41,7 @@ def load_data(fname):
     return data, y
 
 
-BATCH_SIZE = 200
+BATCH_SIZE = 50
 
 Network = DNN.NeuralNetwork(5,3)   # 2 inputs, 3 outputs
 Network.add_hidden_layer(256, activation=ReLu, bias=True)
@@ -55,8 +56,8 @@ Y=[]
 X, Y = load_data("./data/expert_policy.txt")
 
 print("Training Neural Network...")
-
-for i in range(500):
+loss=[]
+for i in range(5000):
     
     # generate a new batch
     batch = []
@@ -77,8 +78,8 @@ for i in range(500):
 #    print(W[-1][0:5])
     aa = Network.a
 #    print("dW", Network.dW)
-    loss = Network.update_weights(5*0.98**i)
-    print(loss)
+    loss.append( Network.update_weights(5*0.98**i))
+    print(loss[-1])
     if (i%20 == 0):
         YY = np.argmax(a,axis=1)
         error = BATCH_SIZE-sum(np.equal(batch_y,YY))
@@ -87,3 +88,6 @@ for i in range(500):
 
 print("Training Done. Loss =",loss)
 a = Network.forward(X)
+plt.figure()
+plt.plot(loss)
+plt.title('Loss over epochs')
