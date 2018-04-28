@@ -9,6 +9,15 @@ import os
 import numpy as np
 import pylab as plt
 
+def softmax(z):
+    z -= np.max(z) # adjustment to avoid overflow, does not affect result
+    expz = np.exp(z)
+    summ = np.sum(expz, axis=1)
+    outp = np.zeros(z.shape)
+    for i in range(np.size(z, axis=0)):
+        outp[i] = expz[i]/summ[i]
+    return outp
+
 class Network(object):
     def __init__(self, hidden_layers=(256, 256, 256), in_dim=5, 
                  out_dim=3, bias=True, activation='relu', lr=1e-1, epoch=500, 
@@ -135,7 +144,7 @@ class Network(object):
             # Next layer            
             myinput = A.copy()
         
-        f = self.A[-1]
+        f = softmax(self.A[-1])
         return f
     
     def _loss(self, f, y):

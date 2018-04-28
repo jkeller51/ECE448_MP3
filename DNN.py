@@ -22,10 +22,17 @@ def logit(p):
 def softmax(z):
     z -= np.max(z) # adjustment to avoid overflow, does not affect result
     expz = np.exp(z)
-    summ = np.sum(expz, axis=1)
+    if (len(z.shape) == 2):
+        summ = np.sum(expz, axis=1)
+    else:
+        summ = np.sum(expz,axis=0)
     outp = np.zeros(z.shape)
-    for i in range(np.size(z, axis=0)):
-        outp[i] = expz[i]/summ[i]
+    
+    if (len(z.shape) == 2):
+        for i in range(np.size(z, axis=0)):
+            outp[i] = expz[i]/summ[i]
+    else:
+        outp = expz/summ
     return outp
 
 def derivative_softmax(F):
@@ -46,12 +53,13 @@ def cross_entropy(a, y):
         L *= -1/(len(a))
         da *= -1/(len(a))
         
-#    else:
-#        # single input
-#        onef = np.zeros(a.shape)
-#        L = -1*(a[int(y)] - np.log(summ))
-#        onef[int(y)] = 1
-#        da = (-1)*(onef-expa/summ)
+    else:
+        # single input
+        onef = np.zeros(a.shape)
+        L =  -1*np.log(a[int(y[i])])
+        onef[int(y)] = 1
+        da = -1*(onef-a)
+        
     # calculate gradient respect to output
     
     
@@ -68,6 +76,19 @@ def _derivative_ReLU(z):
         for i in range(z.shape[0]):
             if (z[i] > 0):
                 outp[i] = 1
+    return outp
+
+def _derivative_sigmoid(z):
+    outp = np.zeros(z.shape)
+    if len(z.shape) == 2:
+        for i in range(z.shape[0]):
+            for j in range(z.shape[1]):
+                if (z[i,j] > 0):
+                    outp[i,j] = np.exp(-z[i,j])/((1 + np.exp(-z[i,j]))**2)
+    else:
+        for i in range(z.shape[0]):
+            if (z[i] > 0):
+                outp[i] = np.exp(-z[i])/((1 + np.exp(-z[i]))**2)
     return outp
     
 

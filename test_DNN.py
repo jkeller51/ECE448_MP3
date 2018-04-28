@@ -8,6 +8,8 @@ import DNN
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+import graphics as gfx
+import pong_model as png
 
 def _ReLu(z):
     outp = np.zeros(z.shape)
@@ -25,6 +27,19 @@ def _ReLu(z):
 
 ReLu = lambda inp: _ReLu(inp)   # rectified linear
 
+def _sigmoid(z):
+    outp = np.zeros(z.shape)
+    if len(z.shape) == 2:
+        for i in range(z.shape[0]):
+            for j in range(z.shape[1]):\
+            outp[i,j] = 1/(1+np.exp(-z[i,j]))
+    else:
+        for i in range(z.shape[0]):
+            if (z[i] > 0):
+                outp[i] = 1/(1+np.exp(-z[i]))
+    return outp
+
+sigmoid = lambda inp: _sigmoid(inp)   # sigmoid
 
 def load_data(fname):
     f = open(fname, 'r')
@@ -41,7 +56,7 @@ def load_data(fname):
     return data, y
 
 
-BATCH_SIZE = 1000
+BATCH_SIZE = 100
 
 Network = DNN.NeuralNetwork(5,3)   # 2 inputs, 3 outputs
 Network.add_hidden_layer(256, activation=ReLu, bias=True)
@@ -53,7 +68,7 @@ X=[]
 Y=[]
 # construct training set
 # load data
-X, Y = load_data("./data/expert_policy.txt")
+X, Y = load_data("./data/test_policy.txt")
 
 means = np.mean(X, axis=0)
 stds = np.std(X, axis=0)
@@ -92,7 +107,36 @@ for i in range(100):
         print("# 2s:",np.sum(np.equal(YY,2)))
 
 print("Training Done. Loss =",loss)
-a = Network.forward(X)
-plt.figure()
-plt.plot(loss)
-plt.title('Loss over epochs')
+#a = Network.forward(X)
+#plt.figure()
+#plt.plot(loss)
+#plt.title('Loss over epochs')
+
+window = gfx.GFX()
+#window.fps = 5  # you can modify this for debugging purposes, default=30
+Game = png.PongModel(0.5, 0.5, 0.03, 0.01, 0.4)   # initialize state
+    
+Lflag = False
+while 1:
+    # main loop
+    if (window._open == False):
+        break
+    
+    state = Game.get_state()
+    actionlist = Network.forward(state)
+    maxidx = 0
+    for i in range(1,len(actionlist)):
+        if (actionlist[i] > actionlist[maxidx]):
+            maxidx = i
+    if (maxidx == 0):
+        Game.move_up()
+    elif (maxidx == 2):
+        Game.move_down()
+        
+        
+    Game.update(window)
+    
+    if (Game.lost == True and Lflag == False):
+        Game.reset()
+
+print("Game ended.")
