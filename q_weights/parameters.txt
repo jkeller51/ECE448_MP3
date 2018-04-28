@@ -1,0 +1,3 @@
+bias,True
+activation,relu
+epoch,600
