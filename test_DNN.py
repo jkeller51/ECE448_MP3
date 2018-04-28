@@ -68,7 +68,7 @@ X=[]
 Y=[]
 # construct training set
 # load data
-X, Y = load_data("./data/test_policy.txt")
+X, Y = load_data("./data/test_policy_easy.txt")
 
 means = np.mean(X, axis=0)
 stds = np.std(X, axis=0)
@@ -98,7 +98,7 @@ for i in range(100):
 #    print(W[-1][0:5])
     aa = Network.a
 #    print("dW", Network.dW)
-    loss.append( Network.update_weights(5*0.98**i))
+    loss.append( Network.update_weights(5*0.95**i))
     print(loss[-1])
     if (i%20 == 0):
         YY = np.argmax(a,axis=1)
@@ -108,9 +108,9 @@ for i in range(100):
 
 print("Training Done. Loss =",loss)
 #a = Network.forward(X)
-#plt.figure()
-#plt.plot(loss)
-#plt.title('Loss over epochs')
+plt.figure()
+plt.plot(loss)
+plt.title('Loss over epochs')
 
 window = gfx.GFX()
 #window.fps = 5  # you can modify this for debugging purposes, default=30
@@ -123,6 +123,7 @@ while 1:
         break
     
     state = Game.get_state()
+    state = np.divide(state-means, stds).tolist()
     actionlist = Network.forward(state)
     maxidx = 0
     for i in range(1,len(actionlist)):
