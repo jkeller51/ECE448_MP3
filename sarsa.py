@@ -260,12 +260,13 @@ class SARSA(object):
                 self._take_action_(self.action)            
                 self.next_state = self._get_current_state_()
                 self.action_ = self._choose_action_()
-                self._update_q_table_()
+                if self.mode == 'train':
+                    self._update_q_table_()
                 self.current_state = self.next_state
                 self.action = self.action_
             
                 # If lost, reset the game and start over
-                # else, count how many scores our agent has erned
+                # else, count how many scores our agent has earned
                 if self.reward == -1:
                     self.environment.reset()
                     break
@@ -280,7 +281,7 @@ class SARSA(object):
                 with open(self.log_file, 'a') as f:
                     f.write('{0}\n'.format(myscore))
             
-            # Counting epicodes
+            # Counting episodes
             episode_ct += 1
         
         # Close the window
