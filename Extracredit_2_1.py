@@ -4,8 +4,11 @@ Created on Thu Apr 19 10:00:22 2018
 
 @author: jkell
 
+Same as Part_2_1 except without normalization
+
 RESULT:
-    Game: 1000 Avg score: 10.136
+    Trained to 83% accuracy on training set.
+    Game: 1000 Avg score: 9.146206896551725
 """
 import DNN
 import random
@@ -73,10 +76,10 @@ if __name__ == '__main__':
     # load data
     X, Y = load_data("./data/test_policy_easy.txt")
     
-    means = np.mean(X, axis=0)
-    stds = np.std(X, axis=0)
-    for i in range(np.size(X, axis=0)):
-        X[i] = np.divide(X[i]-means, stds).tolist()
+#    means = np.mean(X, axis=0)
+#    stds = np.std(X, axis=0)
+#    for i in range(np.size(X, axis=0)):
+#        X[i] = np.divide(X[i]-means, stds).tolist()
         
     print("Training Neural Network...")
     loss=[]
@@ -96,11 +99,6 @@ if __name__ == '__main__':
         # train
         a = Network.forward(batch)
         Network.backward(batch_y)
-        dW = Network.dW
-        W=Network.weights
-    #    print(W[-1][0:5])
-        aa = Network.a
-    #    print("dW", Network.dW)
         loss.append( Network.update_weights(5*0.95**i))
         print(loss[-1])
         if (i%20 == 0):
@@ -127,7 +125,7 @@ if __name__ == '__main__':
             break
         
         state = Game.get_state()
-        state = np.divide(state-means, stds).tolist()
+#        state = np.divide(state-means, stds).tolist()
         actionlist = Network.forward(state)
         maxidx = 0
         for i in range(1,len(actionlist)):
