@@ -30,20 +30,6 @@ def _ReLu(z):
 
 ReLu = lambda inp: _ReLu(inp)   # rectified linear
 
-def _sigmoid(z):
-    outp = np.zeros(z.shape)
-    if len(z.shape) == 2:
-        for i in range(z.shape[0]):
-            for j in range(z.shape[1]):\
-            outp[i,j] = 1/(1+np.exp(-z[i,j]))
-    else:
-        for i in range(z.shape[0]):
-            if (z[i] > 0):
-                outp[i] = 1/(1+np.exp(-z[i]))
-    return outp
-
-sigmoid = lambda inp: _sigmoid(inp)   # sigmoid
-
 def load_data(fname):
     f = open(fname, 'r')
     data = []
@@ -61,7 +47,7 @@ if __name__ == '__main__':
     
     BATCH_SIZE = 100
     
-    Network = DNN.NeuralNetwork(5,3)   # 2 inputs, 3 outputs
+    Network = DNN.NeuralNetwork(5,3)   # 5 inputs, 3 outputs
     Network.add_hidden_layer(256, activation=ReLu, bias=True)
     Network.add_hidden_layer(256, activation=ReLu, bias=True)
     Network.add_hidden_layer(256, activation=ReLu, bias=True)
@@ -126,20 +112,20 @@ if __name__ == '__main__':
         if (window._open == False):
             break
         
-        state = Game.get_state()
-        state = np.divide(state-means, stds).tolist()
-        actionlist = Network.forward(state)
+        state = Game.get_state()  # get the values of relevant variables
+        state = np.divide(state-means, stds).tolist()   # normalize data
+        actionlist = Network.forward(state)   # forward propagation of the DNN
         maxidx = 0
         for i in range(1,len(actionlist)):
             if (actionlist[i] > actionlist[maxidx]):
                 maxidx = i
-        if (maxidx == 0):
+        if (maxidx == 0):    # make the decision
             Game.move_up()
         elif (maxidx == 2):
             Game.move_down()
             
             
-        Game.update(window)
+        Game.update(window)   # update the environment (graphics, "physics")
         
         if (Game.lost == True):
             totalscore += Game.score

@@ -216,7 +216,7 @@ class NeuralNetwork:
         z.append(affine(X, self.weights[0]))
         a.append(np.squeeze(self.hlayers[0].activate(z[-1]))) # apply activation function at first hidden layer
         
-        if (len(self.hlayers) > 1):
+        if (len(self.hlayers) > 1):   # affine transforms and activations
             for i in range(1, len(self.hlayers)):
                 z.append(affine(a[len(a)-1], self.weights[i]))
                 a.append(np.squeeze(self.hlayers[i].activate(z[-1])))
@@ -233,20 +233,19 @@ class NeuralNetwork:
     
     def backward(self, y):
         # y is the expected output
+        
+        # softmax of scores for cross entropy calc
         F = softmax(self.a[len(self.a)-1])
+        
         loss, dF = cross_entropy(F, y)
+        
         self.loss += loss
         dW=[]
         
-        dz=np.multiply(dF, derivative_softmax(softmax(self.a[len(self.a)-1])))
-#        onef = np.zeros((len(y),np.size(self.a[-1],axis=1)))
-#        for i in range(len(y)):
-#            onef[i,int(y[i])] = 1
-#            
-#        dz = (1/len(y)) * (F - onef)
-#        dz = dF
+        dz=np.multiply(dF, derivative_softmax(softmax(self.a[len(self.a)-1])))  # backwards propagation of cross entropy loss
         
         for i in range(0, len(self.hlayers)):
+            # backward propagate loss through each layer
             idx = len(self.hlayers)-1-i
             
             self.a[idx+1] = vectorize(self.a[idx+1])
@@ -291,11 +290,6 @@ class NeuralNetwork:
         
         for i in range(len(self.weights)):
             self.weights[i] -= alpha*self.dW[i]
-        
-#        for i in range(len(self.weights)):
-#            # update weights, but not biases
-#            self.weights[len(self.weights)-1-i][0:-1,:] -= alpha*self.dW[len(self.weights)-1-i][0:-1,:]
-##        
         
         # reset for next batch
         self.loss=0
