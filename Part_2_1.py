@@ -66,6 +66,7 @@ if __name__ == '__main__':
         
     print("Training Neural Network...")
     loss=[]
+    error=[]
     for i in range(200):
         
         # generate a new batch
@@ -89,17 +90,33 @@ if __name__ == '__main__':
     #    print("dW", Network.dW)
         loss.append( Network.update_weights(5*0.95**i))
         print(loss[-1])
+        YY = np.argmax(a,axis=1)
+        error.append(BATCH_SIZE-sum(np.equal(batch_y,YY)))
         if (i%20 == 0):
-            YY = np.argmax(a,axis=1)
-            error = BATCH_SIZE-sum(np.equal(batch_y,YY))
-            print(i, "epochs. Error:", error)
-            print("# 2s:",np.sum(np.equal(YY,2)))
+            print(i, "epochs. Error:", error[-1])
     
-    print("Training Done. Loss =",loss)
-    #a = Network.forward(X)
+    print("Training Done. Loss =",loss[-1])
+    a = Network.forward(X)
+    YY = np.argmax(a,axis=1)
+    finalerror = len(YY)-sum(np.equal(Y,YY))
+    print("Error:", finalerror/len(YY))
+    
+    # confusion matrix
+    confusion = np.zeros((3,3))
+    for qq in range(len(YY)):
+        confusion[int(Y[qq]),YY[qq]] += 1
+    
+    for qq in range(3):
+        confusion[qq, :] /= np.sum(confusion[qq, :])
+    
+    
     plt.figure()
     plt.plot(loss)
     plt.title('Loss over epochs')
+    
+    plt.figure()
+    plt.plot(np.divide(error,BATCH_SIZE))
+    plt.title('Error over epochs')
     
     window = gfx.GFX()
     window.fps = 10e4  # you can modify this for debugging purposes, default=30
