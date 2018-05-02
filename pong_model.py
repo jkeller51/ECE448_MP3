@@ -85,6 +85,10 @@ class PongModel:
         return [self.ball_x, self.ball_y, self.ball_velocity_x, 
                 self.ball_velocity_y, self.paddle_y]
         
+    def get_state2(self):
+        return [self.ball_x, self.ball_y, self.ball_velocity_x, 
+                self.ball_velocity_y, self.paddle2_y]
+        
     def bounce_wall(self, gfx):
         if (self.paddle2_x > -1):
             return False
