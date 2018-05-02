@@ -20,9 +20,9 @@ def DownKey(Game):
 
 if __name__ == '__main__':
     
-    window = gfx.GFX()
+    window = gfx.GFX(wall_x=0, player_x=1)
     #window.fps = 5  # you can modify this for debugging purposes, default=30
-    Game = png.PongModel(0.5, 0.5, 0.03, 0.01, 0.4)   # initialize state
+    Game = png.PongModel(0.5, 0.5, 0.03, 0.01, 0.4, paddleX=1)   # initialize state
     #################################################### Ignore this
     window.win.bind('<Up>',lambda eff: UpKey(Game))
     window.win.bind('<Down>',lambda eff: DownKey(Game))
