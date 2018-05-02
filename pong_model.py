@@ -54,6 +54,10 @@ class PongModel:
     def move_down(self):
         self.move(0.04)
         
+    def get_state(self):
+        return [self.ball_x, self.ball_y, self.ball_velocity_x, 
+                self.ball_velocity_y, self.paddle_y]
+        
     def bounce_wall(self, gfx):
         """ Check whether our ball hit the wall."""
         wall_x = gfx.wall.x / 400
