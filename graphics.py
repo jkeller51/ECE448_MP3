@@ -49,8 +49,18 @@ class Player:
         self.id = self.canvas.create_rectangle(self.x-self.width/2, self.y-self.height/2, self.x+self.width/2, self.y+self.height/2, fill="black")
 
 
+class Wall:
+    def __init__(self, canvas, wall_x=0):
+        self.canvas = canvas
+        self.id = canvas.create_rectangle(wall_x, 0, wall_x+10, 400, fill="black")
+        self.x = wall_x
+        self.y = 0
+        self.width=10
+        self.height=400
+    
+
 class GFX:
-    def __init__(self):
+    def __init__(self, wall_x=0, player_x=1):
         """ Initialize the game window and objects
         There is a ball and a player."""
         self.win = tk.Tk()
@@ -74,8 +84,11 @@ class GFX:
         self.ball.y = 200
         
         self.player = Player(self.canvas)
-        self.player.x = 400
+        self.player.x = player_x * 400
         self.player.y = 200
+        
+        self.wall = Wall(self.canvas, wall_x*self.width)
+        self.wall.x = wall_x * 400
         
         self.thread = DrawThread(self)
         self.fps = 30
