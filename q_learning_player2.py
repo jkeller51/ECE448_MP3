@@ -167,13 +167,13 @@ class QLearning(object):
             self.environment.paddle2_y = 0.8
         
         # Get reward
-        original_score = self.environment.score
-        self.environment.update(self.window)
-        new_score = self.environment.score
-        if self.environment.lost == True:
-            self.reward = -1
-        else:
-            self.reward = new_score - original_score
+#        original_score = self.environment.score
+#        self.environment.update(self.window)
+#        new_score = self.environment.score
+#        if self.environment.lost == True:
+#            self.reward = -1
+#        else:
+#            self.reward = new_score - original_score
     
     def _update_q_table_(self):
         """ Update Q table.

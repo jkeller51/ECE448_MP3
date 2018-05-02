@@ -103,8 +103,12 @@ if __name__ == '__main__':
     Game = png.PongModel(0.5, 0.5, 0.03, 0.01, 0.4)   # initialize state
     Game.init2(0.4, 0)
     
-    games = 0
-    totalscore = 0
+    model = QLearning(Game, window, C=5e3, gamma=0.99, explore = -1,
+                  threshold=-1, log=True, log_file='q_test_log_(1_1)_A.txt', 
+                  mode='test', q_table_file='q_q_table_(1_1)_A.csv')
+    
+    score_DNN = 0
+    score_Q = 0
     while 1:
         # main loop
         if (window._open == False):
@@ -112,6 +116,8 @@ if __name__ == '__main__':
         
         state = Game.get_state()  # get the values of relevant variables
         state = np.divide(state-means, stds).tolist()   # normalize data
+        
+        ################################ DNN
         actionlist = Network.forward(state)   # forward propagation of the DNN
         maxidx = 0
         for i in range(1,len(actionlist)):
@@ -123,13 +129,22 @@ if __name__ == '__main__':
             Game.move_down()
             
             
+        #################### Q-agent
+        model.action = model._choose_action_()
+        model._take_action_(model.action)
+        model.next_state = model._get_current_state_()
+        model.current_state = model.next_state
+            
+            
         Game.update(window)   # update the environment (graphics, "physics")
         
         if (Game.lost == True):
-            totalscore += Game.score
+            if (Game.won == 1):
+                score_DNN += 1
+            else:
+                score_Q += 1
             Game.reset()
-            games+=1
-            if (games <= 1000):
-                print("Game:", games, "Avg score:",totalscore/games)
+            if (games <= 200):
+                print("DNN:", score_DNN,"Q-agent:",score_Q)
     
     print("Game ended.")

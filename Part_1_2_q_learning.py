@@ -16,9 +16,9 @@ if __name__ == '__main__':
     window.fps = 9e16
     
     # Set up model
-    model = QLearning(environment, window, C=5e3, gamma=0.99, explore = 5e4,
-                      threshold=-1, log=True, log_file='q_test_log_(1_1)_B.txt', 
-                      mode='train', q_table_file='q_q_table_(1_1)_B.csv')
+    model = QLearning(environment, window, C=5e3, gamma=0.99, explore = -1,
+                      threshold=-1, log=True, log_file='q_test_log_(1_1)_A.txt', 
+                      mode='test', q_table_file='q_q_table_(1_1)_A.csv')
     
     # Training
     model.train()
