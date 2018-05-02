@@ -48,7 +48,6 @@ class Player:
         self.canvas.delete(self.id)
         self.id = self.canvas.create_rectangle(self.x-self.width/2, self.y-self.height/2, self.x+self.width/2, self.y+self.height/2, fill="black")
 
-
 class Wall:
     def __init__(self, canvas, wall_x=0):
         self.canvas = canvas
@@ -60,7 +59,7 @@ class Wall:
     
 
 class GFX:
-    def __init__(self, wall_x=0, player_x=1):
+    def __init__(self, wall_x=0, player_x=1, players=1):
         """ Initialize the game window and objects
         There is a ball and a player."""
         self.win = tk.Tk()
@@ -87,17 +86,28 @@ class GFX:
         self.player.x = player_x * 400
         self.player.y = 200
         
-        self.wall = Wall(self.canvas, wall_x*self.width)
-        self.wall.x = wall_x * 400
+        if (players == 1):
+            self.wall = Wall(self.canvas, wall_x*self.width)
+            self.wall.x = wall_x * 400
         
         self.thread = DrawThread(self)
         self.fps = 30
+        
+        self.players = players
+        
+        if (players == 2):
+            # 2 players?
+            self.player2 = Player(self.canvas)
+            self.player2.x=0
+            self.player2.y = 200
 
     
     def _update(self):
         # DON'T CALL THIS
         self.ball.draw()
         self.player.draw()
+        if (self.players == 2):
+            self.player2.draw()
         
         self.win.update_idletasks()
         self.win.update()
